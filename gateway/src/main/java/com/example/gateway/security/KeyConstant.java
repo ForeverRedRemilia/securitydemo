@@ -40,4 +40,22 @@ public class KeyConstant {
     public static final String AES_KEY = "AibwMHy+McTzRTcXTFTJppXNnx28KX7WuFXk7HFYF1s8F9qI2tLO7HcuuiBUI4KY94pxjmaszbXPx6Y39a8iVuAjTcVV0mt4QSlKCK+YbXQNPfscJ4EarJ8FUWdSAzaeZMoGVOlwF5EyAozkaFonsp1OOx9i9JGn+7vCwDL7ttmR9VLC0IG+h1MsyUzsSCSVkftN8r9MSrqfe5uK80Xp7VT+lalUVPrVJFCQUKLtYmMEurfhn2poL0vxPwe/BYwl";
 
     public static final String SALT = "cd1d988be8e4c11a";
+
+    //请求端的RSA公钥
+    public static final String REQ_PUB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxLQ72KfqI7kz5i2xv7nJ" +
+            "OyxqQqPmBDhHhdsj78HzbiurtihMI+NEH5nCgtbSXBNbKJO0CMQnJdkNMPNlFAz/" +
+            "9dJtTHAGD4F/C9jws54wHAHUMbSxsbCML5W/WCBQN9QxjTLIZHlFBZGXXrfAgxnZ" +
+            "KM6w0PvWoNPsuur2v7RQ+cvOV5IyIBkLzElsRYktvJXlVYQQkSJWXntm3AMLnLHG" +
+            "PI95ibLuGDmPq3JiWKN2wviZv7cH9V89giV3nRYqsKMjvhNUt/rmBHEcGXemqT73" +
+            "7mAHVgVvOxcnxU3Q2IvPBOxMSqszU4iRotBSqqCq28b9NKxBwQGAZSEp/KyuTOre" +
+            "2wIDAQAB";
+
+    //响应端的RSA公钥
+    public static final String REP_PUB_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6T2p6yPQoUMhiWL7Fpt0" +
+            "x+pbgSNbYEKDRz4xkrwMa1Ph8o3Hw0OseNdeAssepVP93Z0i7PAearMARH0dU7aR" +
+            "BgXnsg6ox0SYvhQiHBC+LA8/NdOpE+BlazlpE2gPtZ3S3xgCjf0d9daqPxas0tru" +
+            "Rp9Ed4mZHAmPrTErzWRA0A5EzV1iIV6EPMTVRh6rvM2KsqEU4OFawsbTcWE1S5Pn" +
+            "HrHrRg++fjjiy5Ub9UVo+8mKL/C41LqRj844YAfH2a/CrxwPpP0lJjRMZNwlHoqL" +
+            "2Hml/4kW/nyZ3d2oxEXQ5i3mARZZfeZ/+ESD4PJ7J+qpQZMzfoz/udP5Sj4GyTuv" +
+            "8QIDAQAB";
 }

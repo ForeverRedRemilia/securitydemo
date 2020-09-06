@@ -1,0 +1,8 @@
+
+spring:
+  redis:
+    host: 192.168.112.140
+    port: 6379
+server:
+  tomcat:
+    uri-encoding: utf-8
