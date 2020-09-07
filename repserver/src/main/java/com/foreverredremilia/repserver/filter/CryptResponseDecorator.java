@@ -1,6 +1,7 @@
 package com.foreverredremilia.repserver.filter;
 
 import com.foreverredremilia.repserver.security.AESUtil;
+import com.foreverredremilia.repserver.security.GetCryptAnnotation;
 import com.foreverredremilia.repserver.security.KeyConstant;
 import com.foreverredremilia.repserver.security.RSAUtil;
 import com.google.gson.Gson;
@@ -13,11 +14,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class CryptResponseDecorator {
 
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     public static ServerHttpResponseDecorator encryptDecorator(ServerHttpResponse response) {
         return new ServerHttpResponseDecorator(response) {
@@ -40,16 +43,28 @@ public class CryptResponseDecorator {
                     sb.deleteCharAt(0).deleteCharAt(sb.length() - 1);
                     HashMap<String, Object> map = gson.fromJson(sb.toString(), HashMap.class);
                     //获取需要加密的字段
-                    String[] crypts = String.valueOf(map.get("crypt")).split(";");
-                    for (String key : crypts) {
-                        String encrypt = RSAUtil.encrypt(String.valueOf(map.get(key)), KeyConstant.REQ_PUB_KEY);
-                        if (null == encrypt) {
-                            map = new HashMap<>();
-                            map.put("status", "985");
-                            map.put("error", "服务端加密失败！");
-                            break;
+                    List<String> crypts = null;
+                    try {
+                        crypts = GetCryptAnnotation.getCrypt(Class.forName(String.valueOf(map.get("clazz"))));
+                    } catch (Exception e) {
+                        map.clear();
+                        map.put("status", "983");
+                        map.put("error", "内部错误！");
+                        e.printStackTrace();
+                    }
+                    map.remove("clazz");
+                    if (null != crypts) {
+                        for (String key : crypts) {
+                            //RSA加密
+                            String encrypt = RSAUtil.encrypt(String.valueOf(map.get(key)), KeyConstant.REQ_PUB_KEY);
+                            if (null == encrypt) {
+                                map.clear();
+                                map.put("status", "985");
+                                map.put("error", "服务端加密失败！");
+                                break;
+                            }
+                            map.put(key, encrypt);
                         }
-                        map.put(key, encrypt);
                     }
                     System.out.println(gson.toJson(map));
                     //AES加密
