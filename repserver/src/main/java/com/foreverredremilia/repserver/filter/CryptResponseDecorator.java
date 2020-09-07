@@ -19,8 +19,8 @@ public class CryptResponseDecorator {
 
     private static Gson gson = new Gson();
 
-    protected static ServerHttpResponseDecorator encryptDecorator(ServerHttpResponse response) {
-        ServerHttpResponseDecorator decorator = new ServerHttpResponseDecorator(response) {
+    public static ServerHttpResponseDecorator encryptDecorator(ServerHttpResponse response) {
+        return new ServerHttpResponseDecorator(response) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                 // Controller返回类型必须是Flux
@@ -58,6 +58,5 @@ public class CryptResponseDecorator {
                 }));
             }
         };
-        return decorator;
     }
 }
