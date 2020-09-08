@@ -3,6 +3,7 @@ package com.foreverredremilia.repserver.api;
 import com.foreverredremilia.repserver.bean.vo.TestVo;
 import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,7 +19,7 @@ import java.util.Map;
 public class TestApi {
 
     @RequestMapping("/test")
-    public Flux<TestVo> test() throws NoSuchAlgorithmException {
+    public Flux<TestVo> test(@RequestBody Map<String,Object> map) throws NoSuchAlgorithmException {
         String s = KeyGenerators.string().generateKey();
         System.out.println(s);
         /*Map<String, Object> map = new LinkedHashMap<>();
