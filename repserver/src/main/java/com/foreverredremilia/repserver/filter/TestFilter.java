@@ -36,26 +36,7 @@ public class TestFilter implements WebFilter {
         map.put("error", "重放攻击！");
         ServerHttpRequest request = serverWebExchange.getRequest();
         ServerHttpResponse response = serverWebExchange.getResponse();
-        return DataBufferUtils.join(serverWebExchange.getRequest().getBody())
-                .flatMap(dataBuffer -> {
-                    DataBufferUtils.retain(dataBuffer);
-                    byte[] content = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(content);
-                    //释放掉内存
-                    DataBufferUtils.release(dataBuffer);
-                    String s = new String(content, StandardCharsets.UTF_8);
-                    System.out.println(s);
-                    ServerHttpRequest mutatedRequest = new ServerHttpRequestDecorator(
-                            serverWebExchange.getRequest()) {
-                        @Override
-                        public Flux<DataBuffer> getBody() {
-                            return Flux.just(dataBufferFactory.wrap(s.getBytes()));
-                        }
-                    };
-                    return webFilterChain.filter(serverWebExchange.mutate().request(mutatedRequest)
-                            .response(CryptResponseDecorator.encryptDecorator(response)).build());
-                });
-
+        return CryptMono.cryptMono(serverWebExchange,webFilterChain);
     }
 
     private static class InputStreamHolder {
