@@ -11,13 +11,17 @@ import java.util.Base64;
 
 public class RSAUtil {
 
-    public static String encrypt(String str, String publicKey) throws Exception {
+    public static String encrypt(String str, String publicKey) {
         byte[] bytes = Base64.getDecoder().decode(publicKey);
-        PublicKey key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        return Base64.getEncoder().encodeToString(cipher
-                .doFinal(str.getBytes(StandardCharsets.UTF_8)));
+        try {
+            PublicKey key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return Base64.getEncoder().encodeToString(cipher
+                    .doFinal(str.getBytes(StandardCharsets.UTF_8)));
+        }catch (Exception e){
+            return null;
+        }
     }
 
     public static String decrypt(String str, String privateKey) {

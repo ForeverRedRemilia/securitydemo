@@ -12,7 +12,7 @@ public class SecurityConfig {
 
     @Bean
     SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity httpSecurity) throws Exception{
-        return httpSecurity.authorizeExchange().pathMatchers("/test/test").permitAll()
+        return httpSecurity.authorizeExchange().pathMatchers("/test/**").permitAll()
                 .and().csrf().disable().build();
     }
 

@@ -7,7 +7,9 @@ import com.foreverredremilia.repserver.security.RSAUtil;
 import com.google.gson.Gson;
 import org.reactivestreams.Publisher;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import reactor.core.publisher.Flux;
@@ -26,19 +28,28 @@ public class CryptResponseDecorator {
         return new ServerHttpResponseDecorator(response) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+                response.getHeaders().set("token","wdnmd");
+                System.out.println(response.getHeaders());
                 // Controller返回类型必须是Flux
                 Flux<? extends DataBuffer> flux = Flux.from(body);
                 return super.writeWith(flux.buffer().map(dataBuffers -> {
                     StringBuilder sb = new StringBuilder("");
                     //解决返回的response不完整问题
-                    dataBuffers.forEach(dataBuffer -> {
+                    /*dataBuffers.forEach(dataBuffer -> {
                         byte[] content = new byte[dataBuffer.readableByteCount()];
                         dataBuffer.read(content);
                         //释放掉内存
                         DataBufferUtils.release(dataBuffer);
                         String s = new String(content, StandardCharsets.UTF_8);
                         sb.append(s);
-                    });
+                    });*/
+                    DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
+                    DataBuffer join = dataBufferFactory.join(dataBuffers);
+                    byte[] content = new byte[join.readableByteCount()];
+                    join.read(content);
+                    DataBufferUtils.release(join);
+                    String s = new String(content, StandardCharsets.UTF_8);
+                    sb.append(s);
                     //去掉字符串最外层的[]
                     sb.deleteCharAt(0).deleteCharAt(sb.length() - 1);
                     HashMap<String, Object> map = gson.fromJson(sb.toString(), HashMap.class);
@@ -69,6 +80,7 @@ public class CryptResponseDecorator {
                     System.out.println(gson.toJson(map));
                     //AES加密
                     String result = AESUtil.encrypt(gson.toJson(map), KeyConstant.AES_KEY, KeyConstant.SALT);
+                    System.out.println(result);
                     return response.bufferFactory().wrap(result.getBytes(StandardCharsets.UTF_8));
                 }));
             }
