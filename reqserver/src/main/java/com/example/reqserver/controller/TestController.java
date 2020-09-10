@@ -8,10 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -26,6 +28,7 @@ public class TestController {
     @RequestMapping("/test")
     public void test() {
         RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters().set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
         //请求测试数据
         TestDto testDto = new TestDto();
         testDto.setApplyUser("蕾米莉亚");
@@ -39,7 +42,8 @@ public class TestController {
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://localhost:8081/test",
                 new HttpEntity<>(body, header), String.class);
         //打印结果
-        log.info(ResponseHeaderBody.getBody(responseEntity, TestVo.class));
+        log.info(responseEntity.getBody());
+        //log.info(ResponseHeaderBody.getBody(responseEntity, TestVo.class));
     }
 
 }

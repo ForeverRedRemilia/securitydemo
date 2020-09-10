@@ -42,7 +42,9 @@ public class CryptMono {
     private static final Logger logger = LoggerFactory.getLogger(CryptMono.class);
 
     public static Mono<Void> cryptMono(ServerWebExchange exchange, GatewayFilterChain chain) {
-        return DataBufferUtils.join(exchange.getRequest().getBody())
+        ServerHttpRequest request = exchange.getRequest();
+        ServerHttpResponse response = exchange.getResponse();
+        return DataBufferUtils.join(request.getBody())
                 .flatMap(dataBuffer -> {
                     DataBufferUtils.retain(dataBuffer);
                     byte[] content = new byte[dataBuffer.readableByteCount()];
@@ -53,9 +55,18 @@ public class CryptMono {
                     //解密得到body
                     String decrypt = AESUtil.decrypt(s, KeyConstant.AES_KEY, KeyConstant.SALT);
                     Map<String,Object> bodyMap = gson.fromJson(decrypt, HashMap.class);
-                    return chain.filter(exchange.mutate()
-                            .request(decryptDecorator(exchange.getRequest().mutate().path("").build(), s.getBytes(StandardCharsets.UTF_8)))
-                            .response(encryptDecorator(exchange.getResponse())).build());
+                    Map<String, Object> map = AccessCheck.accessCheck(request.getHeaders(), String.valueOf(bodyMap.get("token")));
+                    if ((boolean) map.get("access")){
+                        String body = String.valueOf(bodyMap.get("data"));
+                        return chain.filter(exchange.mutate()
+                                .request(decryptDecorator(request.mutate()
+                                                .uri(URI.create(map.get("uri").toString())).build(),
+                                        body.getBytes(StandardCharsets.UTF_8)))
+                                .response(encryptDecorator(response)).build());
+                    }else {
+                        dataBuffer = response.bufferFactory().wrap(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+                        return response.writeWith(Flux.just(dataBuffer));
+                    }
                 });
     }
 

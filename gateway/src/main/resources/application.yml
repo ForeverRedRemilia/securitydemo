@@ -1,6 +1,7 @@
 spring:
   redis:
-    host: 192.168.44.146
+#    host: 192.168.44.146
+    host: 192.168.112.140
     password: amdyes
 server:
   port: 8081
