@@ -47,8 +47,4 @@ public class CryptMono {
         };
     }
 
-    private static class InputStreamHolder {
-        InputStream inputStream;
-    }
-
 }

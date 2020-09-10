@@ -28,36 +28,17 @@ public class CryptFilter implements GatewayFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(CryptFilter.class);
 
-    @Resource
-    private RedisUtil redisUtil;
-
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpResponse serverHttpResponse = exchange.getResponse();
-        /*Boolean aBoolean = redisUtil.setToken("safhasfjioj", "");
-        Map<String, Object> map = new LinkedHashMap<>();
-        if (null == aBoolean || !aBoolean) {
-            serverHttpResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
-            logger.info("重放攻击");
-            map.put("status", "-1");
-            map.put("msg", "重放攻击！");
-        } else {
-            serverHttpResponse.setStatusCode(HttpStatus.OK);
-            logger.info("正常访问");
-            map.put("status", "2");
-            map.put("msg", "正常访问");
-        }*/
         Gson gson = new Gson();
         serverHttpResponse.getHeaders().add("sanvni", "ssss");
-        return chain.filter(exchange.mutate()
-                .request(exchange.getRequest().mutate().uri(URI.create("/test/test")).build())
-                .response(CryptResponseDecorator.encryptDecorator(serverHttpResponse))
-                .build());
+        return CryptMono.cryptMono(exchange,chain);
     }
 
     @Override
     public int getOrder() {
-        return -3;
+        return -2;
     }
 
 }

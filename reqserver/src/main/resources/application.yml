@@ -1,0 +1,4 @@
+spring:
+  redis:
+    host: 192.168.44.142
+    password: amdyes

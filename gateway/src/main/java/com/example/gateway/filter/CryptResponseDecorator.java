@@ -22,9 +22,13 @@ public class CryptResponseDecorator {
 
     private static final Logger logger = LoggerFactory.getLogger(CryptResponseDecorator.class);
 
-    @Autowired
     private RedisUtil redisUtil;
     private static CryptResponseDecorator cryptResponseDecorator;
+
+    @Autowired
+    public void setRedisUtil(RedisUtil redisUtil) {
+        this.redisUtil = redisUtil;
+    }
 
     @PostConstruct
     public void init() {

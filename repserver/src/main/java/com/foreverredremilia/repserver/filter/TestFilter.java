@@ -39,8 +39,4 @@ public class TestFilter implements WebFilter {
         return CryptMono.cryptMono(serverWebExchange,webFilterChain);
     }
 
-    private static class InputStreamHolder {
-        InputStream inputStream;
-    }
-
 }

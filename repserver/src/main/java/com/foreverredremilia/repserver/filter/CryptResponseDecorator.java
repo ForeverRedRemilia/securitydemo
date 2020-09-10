@@ -34,15 +34,6 @@ public class CryptResponseDecorator {
                 Flux<? extends DataBuffer> flux = Flux.from(body);
                 return super.writeWith(flux.buffer().map(dataBuffers -> {
                     StringBuilder sb = new StringBuilder("");
-                    //解决返回的response不完整问题
-                    /*dataBuffers.forEach(dataBuffer -> {
-                        byte[] content = new byte[dataBuffer.readableByteCount()];
-                        dataBuffer.read(content);
-                        //释放掉内存
-                        DataBufferUtils.release(dataBuffer);
-                        String s = new String(content, StandardCharsets.UTF_8);
-                        sb.append(s);
-                    });*/
                     DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
                     DataBuffer join = dataBufferFactory.join(dataBuffers);
                     byte[] content = new byte[join.readableByteCount()];
