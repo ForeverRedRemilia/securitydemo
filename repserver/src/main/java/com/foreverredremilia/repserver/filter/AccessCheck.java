@@ -3,7 +3,6 @@ package com.foreverredremilia.repserver.filter;
 import com.foreverredremilia.repserver.redis.RedisUtil;
 import com.foreverredremilia.repserver.security.KeyConstant;
 import com.foreverredremilia.repserver.security.RSAUtil;
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;

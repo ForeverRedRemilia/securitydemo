@@ -1,10 +1,6 @@
 package com.example.reqserver.bean.dto;
 
 import com.example.reqserver.security.Crypt;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.util.Date;
 
 public class TestDto {
     @Crypt

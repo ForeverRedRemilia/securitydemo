@@ -1,7 +1,6 @@
 package com.example.reqserver.controller;
 
 import com.example.reqserver.bean.dto.TestDto;
-import com.example.reqserver.bean.vo.TestVo;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

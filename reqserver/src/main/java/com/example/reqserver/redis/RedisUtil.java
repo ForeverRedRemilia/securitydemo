@@ -9,8 +9,12 @@ import java.time.Duration;
 @Component
 public class RedisUtil {
 
-    @Autowired
     private RedisTemplate<String, String> redisTemplate;
+
+    @Autowired
+    public void setRedisTemplate(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     public Boolean setToken(String key, String value) {
         return redisTemplate.opsForValue().setIfAbsent(key, value, Duration.ofSeconds(10));
