@@ -51,12 +51,14 @@ public class CryptMono {
                     Map<String, Object> map = AccessCheck
                             .accessCheck(request.getHeaders(), String.valueOf(bodyMap.get("token")), true);
                     if ((boolean) map.get("access")) {
+                        map.remove("access");
                         return chain.filter(exchange.mutate()
                                 .request(requestDecorator(request.mutate()
                                                 .uri(URI.create(map.get("uri").toString())).build(),
                                         bodyMap, (String) map.get("clazz")))
                                 .response(responseDecorator(response)).build());
                     } else {
+                        map.remove("access");
                         dataBuffer = response.bufferFactory().wrap(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
                         return response.writeWith(Flux.just(dataBuffer));
                     }
