@@ -31,11 +31,7 @@ public class TestFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("status", "987");
-        map.put("error", "重放攻击！");
-        ServerHttpRequest request = serverWebExchange.getRequest();
-        ServerHttpResponse response = serverWebExchange.getResponse();
+
         return CryptMono.cryptMono(serverWebExchange,webFilterChain);
     }
 

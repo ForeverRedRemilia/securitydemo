@@ -24,12 +24,10 @@ public class CryptResponseDecorator {
 
     private static final Gson gson = new Gson();
 
-    public static ServerHttpResponseDecorator encryptDecorator(ServerHttpResponse response) {
+    public static ServerHttpResponseDecorator responseDecorator(ServerHttpResponse response) {
         return new ServerHttpResponseDecorator(response) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                response.getHeaders().set("token","wdnmd");
-                System.out.println(response.getHeaders());
                 // Controller返回类型必须是Flux
                 Flux<? extends DataBuffer> flux = Flux.from(body);
                 return super.writeWith(flux.buffer().map(dataBuffers -> {
@@ -44,35 +42,10 @@ public class CryptResponseDecorator {
                     //去掉字符串最外层的[]
                     sb.deleteCharAt(0).deleteCharAt(sb.length() - 1);
                     HashMap<String, Object> map = gson.fromJson(sb.toString(), HashMap.class);
-                    //获取需要加密的字段
-                    List<String> crypts = null;
-                    try {
-                        crypts = GetCryptAnnotation.getCrypt(Class.forName(String.valueOf(map.get("clazz"))));
-                    } catch (Exception e) {
-                        map.clear();
-                        map.put("status", "983");
-                        map.put("error", "内部错误！");
-                        e.printStackTrace();
-                    }
-                    map.remove("clazz");
-                    if (null != crypts) {
-                        for (String key : crypts) {
-                            //RSA加密
-                            String encrypt = RSAUtil.encrypt(String.valueOf(map.get(key)), KeyConstant.REQ_PUB_KEY);
-                            if (null == encrypt) {
-                                map.clear();
-                                map.put("status", "985");
-                                map.put("error", "服务端加密失败！");
-                                break;
-                            }
-                            map.put(key, encrypt);
-                        }
-                    }
-                    System.out.println(gson.toJson(map));
-                    //AES加密
-                    String result = AESUtil.encrypt(gson.toJson(map), KeyConstant.AES_KEY, KeyConstant.SALT);
-                    System.out.println(result);
-                    return response.bufferFactory().wrap(result.getBytes(StandardCharsets.UTF_8));
+                    String token = ResponseHeaderBody.token();
+                    ResponseHeaderBody.setHeaders(response.getHeaders(), token);
+                    return response.bufferFactory().wrap(ResponseHeaderBody.getBody(map, token)
+                            .getBytes(StandardCharsets.UTF_8));
                 }));
             }
         };

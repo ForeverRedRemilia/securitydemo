@@ -38,7 +38,7 @@ public class RequestHeadersBody {
         //整个RequestBody：将业务数据与token进行捆绑获得
         Map<String, Object> bodyMap = new HashMap<>();
         //使用AES密钥加密封业务数据
-        bodyMap.put("data", AESUtil.encrypt(gson.toJson(map), KeyConstant.AES_KEY, KeyConstant.SALT));
+        bodyMap.put("body", AESUtil.encrypt(gson.toJson(map), KeyConstant.AES_KEY, KeyConstant.SALT));
         //使用Gateway的公钥加密token
         bodyMap.put("token", RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
         //使用AES密钥加密整个RequestBody
@@ -50,20 +50,15 @@ public class RequestHeadersBody {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         //使用Gateway的公钥加密token和timestamp，并添加到请求头部
-        try {
-            headers.add("token"
-                    , RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
-            headers.add("timestamp"
-                    , RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.GATE_PUB_KEY));
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("服务请求端对Gateway进行RSA加密失败");
-        }
+        headers.add("token"
+                , RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
+        headers.add("timestamp"
+                , RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.GATE_PUB_KEY));
         return headers;
     }
 
     //生成UUID
-    public static String token(){
+    public static String token() {
         return UUID.randomUUID().toString();
     }
 

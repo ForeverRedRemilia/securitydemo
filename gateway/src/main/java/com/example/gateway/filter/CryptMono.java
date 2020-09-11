@@ -36,7 +36,7 @@ import java.util.Map;
 @Component
 public class CryptMono {
 
-    private static final Gson gson = new Gson();
+    public static final Gson gson = new Gson();
     private static final DataBufferFactory dataBufferFactory =
             new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
     private static final Logger logger = LoggerFactory.getLogger(CryptMono.class);
@@ -54,40 +54,66 @@ public class CryptMono {
                     String s = new String(content, StandardCharsets.UTF_8);
                     //解密得到body
                     String decrypt = AESUtil.decrypt(s, KeyConstant.AES_KEY, KeyConstant.SALT);
-                    Map<String,Object> bodyMap = gson.fromJson(decrypt, HashMap.class);
-                    Map<String, Object> map = AccessCheck.accessCheck(request.getHeaders(), String.valueOf(bodyMap.get("token")));
-                    if ((boolean) map.get("access")){
-                        String body = String.valueOf(bodyMap.get("data"));
+                    Map<String, Object> bodyMap = gson.fromJson(decrypt, HashMap.class);
+                    Map<String, Object> map = AccessCheck
+                            .accessCheck(request.getHeaders(), String.valueOf(bodyMap.get("token")), true);
+                    if ((boolean) map.get("access")) {
                         return chain.filter(exchange.mutate()
-                                .request(decryptDecorator(request.mutate()
+                                .request(requestDecorator(request.mutate()
                                                 .uri(URI.create(map.get("uri").toString())).build(),
-                                        body.getBytes(StandardCharsets.UTF_8)))
-                                .response(encryptDecorator(response)).build());
-                    }else {
+                                        bodyMap, (String) map.get("clazz")))
+                                .response(responseDecorator(response)).build());
+                    } else {
                         dataBuffer = response.bufferFactory().wrap(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
                         return response.writeWith(Flux.just(dataBuffer));
                     }
                 });
     }
 
-    private static ServerHttpRequestDecorator decryptDecorator(ServerHttpRequest request, byte[] bytes) {
+    private static ServerHttpRequestDecorator requestDecorator(ServerHttpRequest request,
+                                                               Map<String, Object> bodyMap, String clazz) {
+        String token = RequestHeadersBody.token();
+        RequestHeadersBody.setHeaders(request.getHeaders(), token);
         return new ServerHttpRequestDecorator(request) {
             @Override
             public Flux<DataBuffer> getBody() {
-                return Flux.just(dataBufferFactory.wrap(bytes));
+                String content = RequestHeadersBody.getBodyContent(bodyMap, token, clazz);
+                return Flux.just(dataBufferFactory.wrap(content.getBytes(StandardCharsets.UTF_8)));
             }
         };
     }
 
-    private static ServerHttpResponseDecorator encryptDecorator(ServerHttpResponse response) {
+    private static ServerHttpResponseDecorator responseDecorator(ServerHttpResponse response) {
         return new ServerHttpResponseDecorator(response) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                String token = response.getHeaders().get("token").get(0);
                 // Controller返回类型必须是Flux
-                return super.writeWith(body);
+                Flux<? extends DataBuffer> flux = Flux.from(body);
+                return super.writeWith(flux.buffer().map(dataBuffers -> {
+                    StringBuilder sb = new StringBuilder("");
+                    DataBuffer join = dataBufferFactory.join(dataBuffers);
+                    byte[] content = new byte[join.readableByteCount()];
+                    join.read(content);
+                    DataBufferUtils.release(join);
+                    String s = new String(content, StandardCharsets.UTF_8);
+                    sb.append(s);
+                    //去掉字符串最外层的[]
+                    sb.deleteCharAt(0).deleteCharAt(sb.length() - 1);
+                    HashMap<String, Object> bodyMap = gson.fromJson(AESUtil.decrypt
+                            (sb.toString(), KeyConstant.AES_KEY, KeyConstant.SALT), HashMap.class);
+                    Map<String, Object> map = AccessCheck.accessCheck(response.getHeaders(),
+                            (String) bodyMap.get("token"), false);
+                    String token = ResponseHeaderBody.token();
+                    ResponseHeaderBody.setHeaders(response.getHeaders(), token);
+                    if ((boolean) map.get("access")) {
+                        ResponseHeaderBody.getBody(bodyMap,token);
+                    }else {
+                        ResponseHeaderBody.fillResp(map,token);
+                    }
+                    return response.bufferFactory().wrap(ResponseHeaderBody.getBody(map, token)
+                            .getBytes(StandardCharsets.UTF_8));
+                }));
             }
-
         };
     }
 

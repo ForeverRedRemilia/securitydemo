@@ -1,7 +1,6 @@
 package com.example.gateway.routes;
 
 import com.example.gateway.filter.CryptFilter;
-import com.example.gateway.filter.CryptResponseDecorator;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
