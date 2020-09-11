@@ -10,7 +10,7 @@ public class AESUtil {
     public static String encrypt(String str, String aesKey, String salt){
         byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
         byte[] encrypt = Encryptors.standard(aesKey, salt).encrypt(bytes);
-        return new String(Base64.getEncoder().encodeToString(encrypt));
+        return Base64.getEncoder().encodeToString(encrypt);
     }
 
     public static String decrypt(String str, String aesKey, String salt){

@@ -1,15 +1,12 @@
 package com.example.gateway.filter;
 
-import com.example.gateway.redis.RedisUtil;
 import com.example.gateway.security.AESUtil;
 import com.example.gateway.security.KeyConstant;
-import com.example.gateway.security.RSAUtil;
 import com.google.gson.Gson;
 import io.netty.buffer.ByteBufAllocator;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
@@ -20,17 +17,13 @@ import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
