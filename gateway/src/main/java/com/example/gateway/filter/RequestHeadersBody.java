@@ -7,6 +7,8 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,12 +29,14 @@ public class RequestHeadersBody {
     }
 
     //自定义请求headers
-    public static void setHeaders(HttpHeaders headers, String token) {
+    public static void setHeaders(ServerHttpRequest request, String token, int length) {
         //使用Gateway的公钥加密token和timestamp，并添加到请求头部
-        headers.set("token"
-                , RSAUtil.encrypt(token, KeyConstant.REP_PUB_KEY));
-        headers.set("timestamp"
-                , RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.REP_PUB_KEY));
+        request.mutate().header("token", RSAUtil.encrypt(token, KeyConstant.REP_PUB_KEY));
+        request.mutate().header("timestamp", RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.REP_PUB_KEY));
+        request.mutate().header("Content-Length", String.valueOf(length));
+        //移除appId
+        request.mutate().header("appId");
+        System.out.println(request.getHeaders());
     }
 
     //生成UUID

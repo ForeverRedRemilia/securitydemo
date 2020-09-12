@@ -46,7 +46,7 @@ public class RequestHeadersBody {
     }
 
     //自定义获取请求头部
-    public static HttpHeaders getGatewayHeader(String token) {
+    public static HttpHeaders getGatewayHeader(String token,String appId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         //使用Gateway的公钥加密token和timestamp，并添加到请求头部
@@ -54,6 +54,8 @@ public class RequestHeadersBody {
                 , RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
         headers.add("timestamp"
                 , RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.GATE_PUB_KEY));
+        headers.add("appId"
+                , RSAUtil.encrypt(appId, KeyConstant.GATE_PUB_KEY));
         return headers;
     }
 

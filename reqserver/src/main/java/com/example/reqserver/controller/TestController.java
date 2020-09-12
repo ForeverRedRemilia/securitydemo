@@ -35,7 +35,8 @@ public class TestController {
         testDto.setApplyDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         testDto.setApplyPay(25000000);
         String token = RequestHeadersBody.token();
-        HttpHeaders header = RequestHeadersBody.getGatewayHeader(token);
+        HttpHeaders header = RequestHeadersBody
+                .getGatewayHeader(token,"67f9b705-987b-4534-854e-544f8ca733a6");
         String body = RequestHeadersBody.getBodyContent(
                 gson.fromJson(gson.toJson(testDto), HashMap.class), TestDto.class, token);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://localhost:8081/test",

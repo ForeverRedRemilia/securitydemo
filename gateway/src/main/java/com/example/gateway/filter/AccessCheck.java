@@ -92,10 +92,16 @@ public class AccessCheck {
                 map.put("msg", "Headers中缺少appId");
                 return map;
             }
-            Map<String,Object> uriAndClazz = CryptMono.gson.fromJson(uriAndClazz(list.get(0)),HashMap.class);
+            String appId = RSAUtil.decrypt(list.get(0), KeyConstant.PRIVATE_KEY);
+            if (null == appId){
+                map.put("status", "989");
+                map.put("msg", "appId解密失败！");
+                return map;
+            }
+            Map<String,Object> uriAndClazz = CryptMono.gson.fromJson(uriAndClazz(appId),HashMap.class);
             String uri = (String) uriAndClazz.get("uri");
             if (StringUtils.isEmpty(uri)) {
-                map.put("status", "989");
+                map.put("status", "991");
                 map.put("msg", "appId无对应地址！");
                 return map;
             }

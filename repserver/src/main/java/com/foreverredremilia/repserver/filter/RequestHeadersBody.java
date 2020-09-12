@@ -19,15 +19,14 @@ public class RequestHeadersBody {
     private static final Gson gson = new Gson();
 
     //自定义请求body
-    public static Map<String,Object> getBodyContent(String body, String clazz) {
+    public static Map<String, Object> getBodyContent(String body, String clazz) {
         String decrypt = AESUtil.decrypt(body, KeyConstant.AES_KEY, KeyConstant.SALT);
         Map<String, Object> map = gson.fromJson(decrypt, HashMap.class);
         List<String> crypts = null;
-        map.put("decrypt",false);
+        map.put("decrypt", false);
         try {
-            crypts = GetCryptAnnotation.getCrypt(Class.forName(clazz));
+            crypts = GetCryptAnnotation.getCrypt(Class.forName(RSAUtil.decrypt(clazz, KeyConstant.PRIVATE_KEY)));
         } catch (ClassNotFoundException e) {
-            map.clear();
             map.put("status", "701");
             map.put("msg", "class not found!");
             e.printStackTrace();
@@ -39,11 +38,12 @@ public class RequestHeadersBody {
                 map.clear();
                 map.put("status", "703");
                 map.put("msg", "参数" + crypt + "解密失败");
+                map.put("decrypt", false);
                 return map;
             }
             map.put(crypt, decrypt);
         }
-        map.put("decrypt",true);
+        map.put("decrypt", true);
         return map;
     }
 

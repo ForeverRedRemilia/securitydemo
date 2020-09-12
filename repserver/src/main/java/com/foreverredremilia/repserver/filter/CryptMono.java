@@ -32,11 +32,11 @@ public class CryptMono {
         return DataBufferUtils.join(exchange.getRequest().getBody())
                 .flatMap(dataBuffer -> {
                     DataBufferUtils.retain(dataBuffer);
-                    byte[] content = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(content);
+                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(bytes);
+                    String s = new String(bytes, StandardCharsets.UTF_8);
                     //释放掉内存
                     DataBufferUtils.release(dataBuffer);
-                    String s = new String(content, StandardCharsets.UTF_8);
                     String decrypt = AESUtil.decrypt(s, KeyConstant.AES_KEY, KeyConstant.SALT);
                     Map<String, Object> bodyMap = gson.fromJson(decrypt, HashMap.class);
                     Map<String, Object> map = AccessCheck
@@ -44,7 +44,7 @@ public class CryptMono {
                     //重放攻击&令牌检测是否通过
                     if ((boolean) map.get("access")) {
                         Map<String, Object> bodyContent = RequestHeadersBody
-                                .getBodyContent((String) map.get("body"), (String) map.get("clazz"));
+                                .getBodyContent((String) bodyMap.get("body"), (String) bodyMap.get("clazz"));
                         //业务数据解密是否成功
                         if ((boolean) bodyContent.get("decrypt")) {
                             bodyContent.remove("decrypt");
@@ -60,16 +60,16 @@ public class CryptMono {
                     }
                     //重放攻击&令牌检测不通过不走入controller，直接响应
                     String token = ResponseHeaderBody.token();
+                    String content = ResponseHeaderBody.fillResp(map, token);
                     //往响应头添加token和timestamp
-                    ResponseHeaderBody.setHeaders(response.getHeaders(),token);
-                    dataBuffer = response.bufferFactory().wrap(ResponseHeaderBody
-                            .fillResp(map, token)
+                    ResponseHeaderBody.setHeaders(response.getHeaders(), token, content.length());
+                    dataBuffer = response.bufferFactory().wrap(content
                             .getBytes(StandardCharsets.UTF_8));
                     return response.writeWith(Flux.just(dataBuffer));
                 });
     }
 
-    private static ServerHttpRequestDecorator requestDecorator(ServerHttpRequest request, Map<String,Object> map) {
+    private static ServerHttpRequestDecorator requestDecorator(ServerHttpRequest request, Map<String, Object> map) {
         return new ServerHttpRequestDecorator(request) {
             @Override
             public Flux<DataBuffer> getBody() {
@@ -87,18 +87,18 @@ public class CryptMono {
                 return super.writeWith(flux.buffer().map(dataBuffers -> {
                     StringBuilder sb = new StringBuilder("");
                     DataBuffer join = dataBufferFactory.join(dataBuffers);
-                    byte[] content = new byte[join.readableByteCount()];
-                    join.read(content);
+                    byte[] bytes = new byte[join.readableByteCount()];
+                    join.read(bytes);
                     DataBufferUtils.release(join);
-                    String s = new String(content, StandardCharsets.UTF_8);
+                    String s = new String(bytes, StandardCharsets.UTF_8);
                     sb.append(s);
                     //去掉字符串最外层的[]
                     sb.deleteCharAt(0).deleteCharAt(sb.length() - 1);
                     HashMap<String, Object> map = gson.fromJson(sb.toString(), HashMap.class);
                     String token = ResponseHeaderBody.token();
-                    ResponseHeaderBody.setHeaders(response.getHeaders(), token);
-                    return response.bufferFactory().wrap(ResponseHeaderBody.getBody(map, token)
-                            .getBytes(StandardCharsets.UTF_8));
+                    String content = ResponseHeaderBody.getBody(map, token);
+                    ResponseHeaderBody.setHeaders(response.getHeaders(), token, content.length());
+                    return response.bufferFactory().wrap(content.getBytes(StandardCharsets.UTF_8));
                 }));
             }
         };

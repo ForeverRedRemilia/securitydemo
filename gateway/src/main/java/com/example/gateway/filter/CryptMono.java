@@ -40,11 +40,11 @@ public class CryptMono {
         return DataBufferUtils.join(request.getBody())
                 .flatMap(dataBuffer -> {
                     DataBufferUtils.retain(dataBuffer);
-                    byte[] content = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(content);
+                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(bytes);
                     //释放掉内存
                     DataBufferUtils.release(dataBuffer);
-                    String s = new String(content, StandardCharsets.UTF_8);
+                    String s = new String(bytes, StandardCharsets.UTF_8);
                     //解密得到body
                     String decrypt = AESUtil.decrypt(s, KeyConstant.AES_KEY, KeyConstant.SALT);
                     Map<String, Object> bodyMap = gson.fromJson(decrypt, HashMap.class);
@@ -59,7 +59,10 @@ public class CryptMono {
                                 .response(responseDecorator(response)).build());
                     } else {
                         map.remove("access");
-                        dataBuffer = response.bufferFactory().wrap(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+                        String token = RequestHeadersBody.token();
+                        String content = ResponseHeaderBody.fillResp(map, token);
+                        ResponseHeaderBody.setHeaders(response.getHeaders(), token, content.length());
+                        dataBuffer = response.bufferFactory().wrap(content.getBytes(StandardCharsets.UTF_8));
                         return response.writeWith(Flux.just(dataBuffer));
                     }
                 });
@@ -68,11 +71,11 @@ public class CryptMono {
     private static ServerHttpRequestDecorator requestDecorator(ServerHttpRequest request,
                                                                Map<String, Object> bodyMap, String clazz) {
         String token = RequestHeadersBody.token();
-        RequestHeadersBody.setHeaders(request.getHeaders(), token);
+        String content = RequestHeadersBody.getBodyContent(bodyMap, token, clazz);
+        RequestHeadersBody.setHeaders(request, token, content.length());
         return new ServerHttpRequestDecorator(request) {
             @Override
             public Flux<DataBuffer> getBody() {
-                String content = RequestHeadersBody.getBodyContent(bodyMap, token, clazz);
                 return Flux.just(dataBufferFactory.wrap(content.getBytes(StandardCharsets.UTF_8)));
             }
         };
@@ -87,25 +90,24 @@ public class CryptMono {
                 return super.writeWith(flux.buffer().map(dataBuffers -> {
                     StringBuilder sb = new StringBuilder("");
                     DataBuffer join = dataBufferFactory.join(dataBuffers);
-                    byte[] content = new byte[join.readableByteCount()];
-                    join.read(content);
+                    byte[] bytes = new byte[join.readableByteCount()];
+                    join.read(bytes);
                     DataBufferUtils.release(join);
-                    String s = new String(content, StandardCharsets.UTF_8);
+                    String s = new String(bytes, StandardCharsets.UTF_8);
                     sb.append(s);
                     //去掉字符串最外层的[]
-                    sb.deleteCharAt(0).deleteCharAt(sb.length() - 1);
+                    //sb.deleteCharAt(0).deleteCharAt(sb.length() - 1);
                     HashMap<String, Object> bodyMap = gson.fromJson(AESUtil.decrypt
                             (sb.toString(), KeyConstant.AES_KEY, KeyConstant.SALT), HashMap.class);
                     Map<String, Object> map = AccessCheck.accessCheck(response.getHeaders(),
                             (String) bodyMap.get("token"), false);
                     String token = ResponseHeaderBody.token();
-                    ResponseHeaderBody.setHeaders(response.getHeaders(), token);
+                    String content = ResponseHeaderBody.fillResp(map, token);
                     if ((boolean) map.get("access")) {
-                        ResponseHeaderBody.getBody(bodyMap,token);
-                    }else {
-                        ResponseHeaderBody.fillResp(map,token);
+                        content = ResponseHeaderBody.getBody(bodyMap, token);
                     }
-                    return response.bufferFactory().wrap(ResponseHeaderBody.getBody(map, token)
+                    ResponseHeaderBody.setHeaders(response.getHeaders(), token, content.length());
+                    return response.bufferFactory().wrap(content
                             .getBytes(StandardCharsets.UTF_8));
                 }));
             }

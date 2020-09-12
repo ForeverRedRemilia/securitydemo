@@ -32,12 +32,13 @@ public class ResponseHeaderBody {
     }
 
     //自定义请求headers
-    public static void setHeaders(HttpHeaders headers, String token) {
+    public static void setHeaders(HttpHeaders headers, String token, int length) {
         //使用Gateway的公钥加密token和timestamp，并添加到请求头部
         headers.set("token"
                 , RSAUtil.encrypt(token, KeyConstant.REQ_PUB_KEY));
         headers.set("timestamp"
                 , RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.REQ_PUB_KEY));
+        headers.setContentLength(length);
     }
 
     public static String token() {

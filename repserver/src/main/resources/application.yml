@@ -1,9 +1,10 @@
 
 spring:
   redis:
-#    host: 192.168.112.140
-    host: 192.168.44.147
+    host: 192.168.112.141
+#    host: 192.168.44.147
     port: 6379
+    password: amdyes
 server:
   tomcat:
     uri-encoding: utf-8
