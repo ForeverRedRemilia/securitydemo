@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class ResponseHeaderBody {
         this.redisUtil = redisUtil;
     }
 
+    @PostConstruct
     public void init() {
         responseHeaderBody = this;
         redisUtil = this.redisUtil;
@@ -51,11 +53,11 @@ public class ResponseHeaderBody {
             }
             long l = Long.parseLong(timestamp);
             long l1 = System.currentTimeMillis();
-            if (10000 > l1 - l) {
+            if (10000 < l1 - l) {
                 return "会话超时！";
             }
         }
-        //解密ResponseBody，拿到Body中的token
+        //解密整体Json，拿到Body中的 token
         Map<String, Object> bodyMap = gson.fromJson(AESUtil.decrypt(responseEntity.getBody(),
                 KeyConstant.AES_KEY, KeyConstant.SALT), HashMap.class);
         String bodyToken = RSAUtil.decrypt(String.valueOf(bodyMap.get("token")),
@@ -79,15 +81,15 @@ public class ResponseHeaderBody {
             }
         }
         //对业务数据进行解密
-        Map<String,Object> data = gson.fromJson(AESUtil.decrypt(String.valueOf(bodyMap.get("data")),
+        Map<String,Object> body = gson.fromJson(AESUtil.decrypt(String.valueOf(bodyMap.get("body")),
                 KeyConstant.AES_KEY,KeyConstant.SALT),HashMap.class);
         List<String> crypts = GetCryptAnnotation.getCrypt(clazz);
         for (String key : crypts) {
-            //使用响应端的公钥加密敏感数据
-            String encrypt = RSAUtil.encrypt(String.valueOf(data.get(key)), KeyConstant.REP_PUB_KEY);
-            data.put(key, encrypt);
+            //使用私钥解密敏感数据
+            String decrypt = RSAUtil.decrypt(String.valueOf(body.get(key)), KeyConstant.PRIVATE_KEY);
+            body.put(key, decrypt);
         }
-        return gson.toJson(data);
+        return gson.toJson(body);
     }
 
 }

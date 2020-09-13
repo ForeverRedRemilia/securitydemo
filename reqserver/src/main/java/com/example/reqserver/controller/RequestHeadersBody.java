@@ -22,28 +22,23 @@ public class RequestHeadersBody {
     private static final Gson gson = new Gson();
 
     /**
-     * 获取加密后的 Body
-     *
      * @param map   由 json字符串转换的 map
      * @param clazz json字符串转换之前对应的 dto类
-     * @return
      */
     public static String getBodyContent(Map<String, Object> map, Class<?> clazz, String token) {
         List<String> crypts = GetCryptAnnotation.getCrypt(clazz);
         for (String key : crypts) {
-            //使用响应端的公钥加密敏感数据
+            //第一层加密，使用响应端的公钥加密敏感数据
             String encrypt = RSAUtil.encrypt(String.valueOf(map.get(key)), KeyConstant.REP_PUB_KEY);
             map.put(key, encrypt);
         }
-        log.info("第一层加密：\n" + gson.toJson(map));
         //整个RequestBody：将业务数据与token进行捆绑获得
         Map<String, Object> bodyMap = new HashMap<>();
-        //使用AES密钥加密封业务数据
+        //第二层加密，使用AES密钥加密封业务数据
         bodyMap.put("body", AESUtil.encrypt(gson.toJson(map), KeyConstant.AES_KEY, KeyConstant.SALT));
         //使用Gateway的公钥加密token
         bodyMap.put("token", RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
-        log.info("第二层加密：\n" + gson.toJson(bodyMap));
-        //使用AES密钥加密整个RequestBody
+        //第三层加密，使用AES密钥加密整个RequestBody
         return AESUtil.encrypt(gson.toJson(bodyMap), KeyConstant.AES_KEY, KeyConstant.SALT);
     }
 
