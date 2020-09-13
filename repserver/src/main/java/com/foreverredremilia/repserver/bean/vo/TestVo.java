@@ -5,37 +5,36 @@ import com.foreverredremilia.repserver.security.Crypt;
 public class TestVo {
 
     @Crypt
-    private String applyUser;
-
-    private String applyPlace;
-
+    private String applyMsg; //申请结果
     @Crypt
-    private Integer applyPay;
+    private String applyStatus; //申请状态
+    @Crypt
+    private String applyCode; //申请操作码
 
     private Class<?> clazz;
 
-    public String getApplyUser() {
-        return applyUser;
+    public String getApplyMsg() {
+        return applyMsg;
     }
 
-    public void setApplyUser(String applyUser) {
-        this.applyUser = applyUser;
+    public void setApplyMsg(String applyMsg) {
+        this.applyMsg = applyMsg;
     }
 
-    public String getApplyPlace() {
-        return applyPlace;
+    public String getApplyStatus() {
+        return applyStatus;
     }
 
-    public void setApplyPlace(String applyPlace) {
-        this.applyPlace = applyPlace;
+    public void setApplyStatus(String applyStatus) {
+        this.applyStatus = applyStatus;
     }
 
-    public Integer getApplyPay() {
-        return applyPay;
+    public String getApplyCode() {
+        return applyCode;
     }
 
-    public void setApplyPay(Integer applyPay) {
-        this.applyPay = applyPay;
+    public void setApplyCode(String applyCode) {
+        this.applyCode = applyCode;
     }
 
     public Class<?> getClazz() {
