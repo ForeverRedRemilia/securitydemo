@@ -14,7 +14,8 @@ public class RSAUtil {
     public static String encrypt(String str, String publicKey) {
         byte[] bytes = Base64.getDecoder().decode(publicKey);
         try {
-            PublicKey key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
+            PublicKey key = KeyFactory.getInstance("RSA")
+                    .generatePublic(new X509EncodedKeySpec(bytes));
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
             return Base64.getEncoder().encodeToString(cipher
@@ -27,15 +28,16 @@ public class RSAUtil {
     public static String decrypt(String str, String privateKey) {
         try {
             byte[] bytes = Base64.getDecoder().decode(privateKey);
-            PrivateKey key = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
+            PrivateKey key = KeyFactory.getInstance("RSA")
+                    .generatePrivate(new PKCS8EncodedKeySpec(bytes));
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
             return new String(cipher
-                    .doFinal(Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8))));
+                    .doFinal(Base64.getDecoder()
+                            .decode(str.getBytes(StandardCharsets.UTF_8))));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-
 }

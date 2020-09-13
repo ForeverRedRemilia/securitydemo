@@ -8,12 +8,10 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.UUID;
 
-@Component
 public class ResponseHeaderBody {
 
     private static final Logger log = LoggerFactory.getLogger(ResponseHeaderBody.class);
@@ -33,11 +31,10 @@ public class ResponseHeaderBody {
 
     //自定义请求headers
     public static void setHeaders(HttpHeaders headers, String token, int length) {
-        //使用Gateway的公钥加密token和timestamp，并添加到请求头部
-        headers.set("token"
-                , RSAUtil.encrypt(token, KeyConstant.REQ_PUB_KEY));
-        headers.set("timestamp"
-                , RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.REQ_PUB_KEY));
+        //使用请求端的公钥加密token和timestamp，并添加到请求头部
+        headers.set("token", RSAUtil.encrypt(token, KeyConstant.REQ_PUB_KEY));
+        headers.set("timestamp", RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.REQ_PUB_KEY));
+        //重新设置响应体的长度
         headers.setContentLength(length);
     }
 
@@ -46,3 +43,4 @@ public class ResponseHeaderBody {
     }
 
 }
+

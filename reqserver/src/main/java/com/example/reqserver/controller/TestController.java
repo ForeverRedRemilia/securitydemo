@@ -2,6 +2,8 @@ package com.example.reqserver.controller;
 
 import com.example.reqserver.bean.dto.TestDto;
 import com.example.reqserver.bean.vo.TestVo;
+import com.example.reqserver.security.KeyConstant;
+import com.example.reqserver.security.RSAUtil;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,15 +39,18 @@ public class TestController {
         testDto.setApplyPay("$25000000");
         testDto.setApplyStyle("東方支付");
         String token = RequestHeadersBody.token();
-        HttpHeaders header = RequestHeadersBody
-                .getGatewayHeader(token, "67f9b705-987b-4534-854e-544f8ca733a6");
+        HttpHeaders header = RequestHeadersBody.getGatewayHeader(token, "67f9b705-987b-4534-854e-544f8ca733a6");
         //获取请求体
         String body = RequestHeadersBody.getBodyContent(
                 gson.fromJson(gson.toJson(testDto), HashMap.class), TestDto.class, token);
+        /*log.info("appId:" + RSAUtil.encrypt("67f9b705-987b-4534-854e-544f8ca733a6", KeyConstant.GATE_PUB_KEY));
+        log.info("token:" + RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
+        log.info("timestamp:" + RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.GATE_PUB_KEY));
+        log.info("body:" + body);*/
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://localhost:8081/test",
-                new HttpEntity<>(body, header), String.class);
+                        new HttpEntity<>(body, header), String.class);
         //打印结果
         log.info(ResponseHeaderBody.getBody(responseEntity, TestVo.class));
     }
-
 }
+

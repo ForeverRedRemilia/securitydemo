@@ -12,6 +12,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -30,8 +31,7 @@ import java.util.Map;
 public class CryptMono {
 
     public static final Gson gson = new Gson();
-    private static final DataBufferFactory dataBufferFactory =
-            new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+    private static final DataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
     private static final Logger logger = LoggerFactory.getLogger(CryptMono.class);
 
     public static Mono<Void> cryptMono(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -46,18 +46,19 @@ public class CryptMono {
                     DataBufferUtils.release(dataBuffer);
                     String s = new String(bytes, StandardCharsets.UTF_8);
                     //解密得到body
-                    String decrypt = AESUtil.decrypt(s, KeyConstant.AES_KEY, KeyConstant.SALT);
+                    String decrypt = AESUtil.decrypt(s, KeyConstant.AES_KEY,
+                            KeyConstant.SALT);
                     Map<String, Object> bodyMap = gson.fromJson(decrypt, HashMap.class);
-                    Map<String, Object> map = AccessCheck
-                            .accessCheck(request.getHeaders(), String.valueOf(bodyMap.get("token")), true);
+                    Map<String, Object> map = AccessCheck.accessCheck(request.getHeaders(),
+                            String.valueOf(bodyMap.get("token")), true);
+                    logger.info(gson.toJson(map));
                     if ((boolean) map.get("access")) {
                         map.remove("access");
-                        return chain.filter(exchange.mutate()
-                                .request(requestDecorator(request.mutate()
-                                                .uri(URI.create(map.get("uri").toString())).build(),
-                                        bodyMap, (String) map.get("clazz")))
-                                .response(responseDecorator(response)).build());
+                        return chain.filter(exchange.mutate().request(requestDecorator(request.mutate()
+                                .uri(URI.create(map.get("uri").toString())).build(),
+                                bodyMap, (String) map.get("clazz"))).response(responseDecorator(response)).build());
                     } else {
+                        response.setStatusCode(HttpStatus.BAD_REQUEST);
                         map.remove("access");
                         String token = RequestHeadersBody.token();
                         String content = ResponseHeaderBody.fillResp(map, token);
@@ -68,8 +69,8 @@ public class CryptMono {
                 });
     }
 
-    private static ServerHttpRequestDecorator requestDecorator(ServerHttpRequest request,
-                                                               Map<String, Object> bodyMap, String clazz) {
+    private static ServerHttpRequestDecorator requestDecorator(ServerHttpRequest request, Map<String, Object> bodyMap,
+             String clazz) {
         String token = RequestHeadersBody.token();
         String content = RequestHeadersBody.getBodyContent(bodyMap, token, clazz);
         RequestHeadersBody.setHeaders(request, token, content.length());
@@ -81,7 +82,8 @@ public class CryptMono {
         };
     }
 
-    private static ServerHttpResponseDecorator responseDecorator(ServerHttpResponse response) {
+    private static ServerHttpResponseDecorator responseDecorator
+            (ServerHttpResponse response) {
         return new ServerHttpResponseDecorator(response) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
@@ -97,8 +99,8 @@ public class CryptMono {
                     sb.append(s);
                     //去掉字符串最外层的[]
                     //sb.deleteCharAt(0).deleteCharAt(sb.length() - 1);
-                    HashMap<String, Object> bodyMap = gson.fromJson(AESUtil.decrypt
-                            (sb.toString(), KeyConstant.AES_KEY, KeyConstant.SALT), HashMap.class);
+                    HashMap<String, Object> bodyMap = gson.fromJson(AESUtil.decrypt(sb.toString(), KeyConstant.AES_KEY,
+                                    KeyConstant.SALT), HashMap.class);
                     Map<String, Object> map = AccessCheck.accessCheck(response.getHeaders(),
                             (String) bodyMap.get("token"), false);
                     String token = ResponseHeaderBody.token();
@@ -107,8 +109,7 @@ public class CryptMono {
                         content = ResponseHeaderBody.getBody(bodyMap, token);
                     }
                     ResponseHeaderBody.setHeaders(response.getHeaders(), token, content.length());
-                    return response.bufferFactory().wrap(content
-                            .getBytes(StandardCharsets.UTF_8));
+                    return response.bufferFactory().wrap(content.getBytes(StandardCharsets.UTF_8));
                 }));
             }
         };

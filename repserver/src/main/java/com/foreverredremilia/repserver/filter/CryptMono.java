@@ -23,8 +23,7 @@ public class CryptMono {
 
     private static final Gson gson = new Gson();
 
-    private static final DataBufferFactory dataBufferFactory =
-            new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+    private static final DataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
 
     public static Mono<Void> cryptMono(ServerWebExchange exchange, WebFilterChain webFilterChain) {
         ServerHttpRequest request = exchange.getRequest();

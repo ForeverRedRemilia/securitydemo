@@ -31,8 +31,7 @@ public class AccessCheck {
     }
 
     //isReq 是否为request
-    public static Map<String, Object> accessCheck(HttpHeaders headers, String bodyToken,
-                                                  boolean isReq) {
+    public static Map<String, Object> accessCheck(HttpHeaders headers, String bodyToken, boolean isReq) {
         Map<String, Object> map = new HashMap<>();
         List<String> list = headers.get("timestamp");
         map.put("access", false);

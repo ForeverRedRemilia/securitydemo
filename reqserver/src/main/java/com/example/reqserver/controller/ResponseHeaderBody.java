@@ -39,7 +39,8 @@ public class ResponseHeaderBody {
         redisUtil = this.redisUtil;
     }
 
-    public static String getBody(ResponseEntity<String> responseEntity, Class<?> clazz) {
+    public static String getBody(ResponseEntity<String> responseEntity,
+                                 Class<?> clazz) {
         HttpHeaders headers = responseEntity.getHeaders();
         //对timestamp校验
         List<String> list = headers.get("timestamp");
@@ -57,11 +58,10 @@ public class ResponseHeaderBody {
                 return "会话超时！";
             }
         }
-        //解密整体Json，拿到Body中的 token
-        Map<String, Object> bodyMap = gson.fromJson(AESUtil.decrypt(responseEntity.getBody(),
-                KeyConstant.AES_KEY, KeyConstant.SALT), HashMap.class);
-        String bodyToken = RSAUtil.decrypt(String.valueOf(bodyMap.get("token")),
-                KeyConstant.PRIVATE_KEY);
+        //第一步解密，解密整体Json，拿到Body中的 token
+        Map<String, Object> bodyMap = gson.fromJson(
+                AESUtil.decrypt(responseEntity.getBody(), KeyConstant.AES_KEY, KeyConstant.SALT), HashMap.class);
+        String bodyToken = RSAUtil.decrypt(String.valueOf(bodyMap.get("token")), KeyConstant.PRIVATE_KEY);
         //对token进行校验
         list = headers.get("token");
         if (null == list) {
@@ -80,12 +80,12 @@ public class ResponseHeaderBody {
                 return "监测到重放攻击！";
             }
         }
-        //对业务数据进行解密
-        Map<String,Object> body = gson.fromJson(AESUtil.decrypt(String.valueOf(bodyMap.get("body")),
-                KeyConstant.AES_KEY,KeyConstant.SALT),HashMap.class);
+        //第二步解密，对业务数据进行解密
+        Map<String,Object> body = gson.fromJson(AESUtil
+                .decrypt(String.valueOf(bodyMap.get("body")), KeyConstant.AES_KEY,KeyConstant.SALT),HashMap.class);
         List<String> crypts = GetCryptAnnotation.getCrypt(clazz);
         for (String key : crypts) {
-            //使用私钥解密敏感数据
+            //第三步解密，使用私钥解密敏感数据
             String decrypt = RSAUtil.decrypt(String.valueOf(body.get(key)), KeyConstant.PRIVATE_KEY);
             body.put(key, decrypt);
         }

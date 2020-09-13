@@ -49,6 +49,7 @@ public class ResponseHeaderBody {
                 body.put(key, encrypt);
             }
         }
+        log.info(gson.toJson(body));
         map.put("body",AESUtil.encrypt(gson.toJson(body), KeyConstant.AES_KEY, KeyConstant.SALT));
         map.put("status","300");
         return fillResp(map,token);
@@ -61,12 +62,12 @@ public class ResponseHeaderBody {
     }
 
     //自定义请求headers
-    public static void setHeaders(HttpHeaders headers, String token, int length) {
+    public static void setHeaders(HttpHeaders headers, String token,
+                                  int length) {
         //使用Gateway的公钥加密token和timestamp，并添加到请求头部
-        headers.set("token"
-                , RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
-        headers.set("timestamp"
-                , RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()), KeyConstant.GATE_PUB_KEY));
+        headers.set("token", RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
+        headers.set("timestamp", RSAUtil.encrypt(String.valueOf(System.currentTimeMillis()),
+                        KeyConstant.GATE_PUB_KEY));
         headers.setContentLength(length);
     }
 

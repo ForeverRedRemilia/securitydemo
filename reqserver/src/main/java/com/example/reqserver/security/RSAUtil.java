@@ -17,8 +17,7 @@ public class RSAUtil {
             PublicKey key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            return Base64.getEncoder().encodeToString(cipher
-                    .doFinal(str.getBytes(StandardCharsets.UTF_8)));
+            return Base64.getEncoder().encodeToString(cipher.doFinal(str.getBytes(StandardCharsets.UTF_8)));
         }catch (Exception e){
             return null;
         }
@@ -30,8 +29,7 @@ public class RSAUtil {
             PrivateKey key = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, key);
-            return new String(cipher
-                    .doFinal(Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8))));
+            return new String(cipher.doFinal(Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8))));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
