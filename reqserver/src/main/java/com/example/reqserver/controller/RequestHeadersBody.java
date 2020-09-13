@@ -35,18 +35,20 @@ public class RequestHeadersBody {
             String encrypt = RSAUtil.encrypt(String.valueOf(map.get(key)), KeyConstant.REP_PUB_KEY);
             map.put(key, encrypt);
         }
+        log.info("第一层加密：\n" + gson.toJson(map));
         //整个RequestBody：将业务数据与token进行捆绑获得
         Map<String, Object> bodyMap = new HashMap<>();
         //使用AES密钥加密封业务数据
         bodyMap.put("body", AESUtil.encrypt(gson.toJson(map), KeyConstant.AES_KEY, KeyConstant.SALT));
         //使用Gateway的公钥加密token
         bodyMap.put("token", RSAUtil.encrypt(token, KeyConstant.GATE_PUB_KEY));
+        log.info("第二层加密：\n" + gson.toJson(bodyMap));
         //使用AES密钥加密整个RequestBody
         return AESUtil.encrypt(gson.toJson(bodyMap), KeyConstant.AES_KEY, KeyConstant.SALT);
     }
 
     //自定义获取请求头部
-    public static HttpHeaders getGatewayHeader(String token,String appId) {
+    public static HttpHeaders getGatewayHeader(String token, String appId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         //使用Gateway的公钥加密token和timestamp，并添加到请求头部

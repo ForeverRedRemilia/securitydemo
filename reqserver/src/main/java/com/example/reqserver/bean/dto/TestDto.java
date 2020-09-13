@@ -12,7 +12,9 @@ public class TestDto {
     private String applyDate; //申请时间
 
     @Crypt
-    private Integer applyPay; //申请金额
+    private String applyPay; //申请金额
+
+    private String applyStyle; //支付方式
 
     public String getApplyUser() {
         return applyUser;
@@ -38,12 +40,19 @@ public class TestDto {
         this.applyDate = applyDate;
     }
 
-    public Integer getApplyPay() {
+    public String getApplyPay() {
         return applyPay;
     }
 
-    public void setApplyPay(Integer applyPay) {
+    public void setApplyPay(String applyPay) {
         this.applyPay = applyPay;
     }
 
+    public String getApplyStyle() {
+        return applyStyle;
+    }
+
+    public void setApplyStyle(String applyStyle) {
+        this.applyStyle = applyStyle;
+    }
 }

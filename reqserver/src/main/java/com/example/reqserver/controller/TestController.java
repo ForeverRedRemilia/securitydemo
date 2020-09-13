@@ -33,12 +33,15 @@ public class TestController {
         testDto.setApplyUser("蕾米莉亚");
         testDto.setApplyPlace("红魔馆");
         testDto.setApplyDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-        testDto.setApplyPay(25000000);
+        testDto.setApplyPay("$25000000");
+        testDto.setApplyStyle("東方支付");
+        log.info("未加密：\n" + gson.toJson(testDto));
         String token = RequestHeadersBody.token();
         HttpHeaders header = RequestHeadersBody
-                .getGatewayHeader(token,"67f9b705-987b-4534-854e-544f8ca733a6");
+                .getGatewayHeader(token, "67f9b705-987b-4534-854e-544f8ca733a6");
         String body = RequestHeadersBody.getBodyContent(
                 gson.fromJson(gson.toJson(testDto), HashMap.class), TestDto.class, token);
+        log.info("第三层加密：\n" + body);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://localhost:8081/test",
                 new HttpEntity<>(body, header), String.class);
         //打印结果
